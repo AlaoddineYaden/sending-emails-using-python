@@ -76,7 +76,7 @@ def test_proxy(proxy):
     try:
         ua = UserAgent()
         headers = {'User-Agent': ua.random}
-        response = requests.get('https://www.google.com', proxies={'http': proxy, 'https': proxy}, headers=headers, timeout=10)
+        response = requests.get('https://www.google.com', proxies={'http': proxy, 'https': proxy}, headers=headers, timeout=1000)
         if response.status_code == 200:
             return True
     except RequestException as e:
