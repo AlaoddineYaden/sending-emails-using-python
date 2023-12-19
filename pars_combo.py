@@ -1,8 +1,8 @@
 import re
 
 # Specify input and output file names
-input_file = 'hh.txt'
-output_file = 'clean_emails.txt'
+input_file = 'clean_emails.txt'
+output_file = 'emails.txt'
 
 # Define regular expression pattern to match email:password format
 pattern = re.compile(r'(.+):(.+)')

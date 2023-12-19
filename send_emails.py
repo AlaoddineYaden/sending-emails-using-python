@@ -1,11 +1,15 @@
 import smtplib
+from email.message import EmailMessage
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.image import MIMEImage
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from socket import socket
 import threading
 import time
+import sys
+import requests
 from socket import socket
 import socks
 import random
@@ -13,6 +17,7 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
+
 
 root = os.getenv("root")
 emails_file = root + os.getenv("emails_file")
@@ -29,25 +34,25 @@ smtp_port = 587
 
 
 smtp_accounts = [
-    {
-        "username": "brushheurt@gmail.com",
-        "password": "jewcpignaibjafnn",
-        "max_sending": 50,
-    },
+    # {
+    #     "username": "brushheurt@gmail.com",
+    #     "password": "jewcpignaibjafnn",
+    #     "max_sending": 4000,
+    # },
     {
         "username": "falahokama@gmail.com",
         "password": "tllofflvomcyyyxc",
-        "max_sending": 100,
+        "max_sending": 400,
     },
     {
         "username": "cuddyduffy@gmail.com",
-        "password": "cuxuufuxtvqhhjyj",
-        "max_sending": 500,
+        "password": "wzqsjtgzhrnzsdnw",
+        "max_sending": 800,
     },
     {
         "username": "tywannew@gmail.com",
-        "password": "cfrxnumboxhemcnb",
-        "max_sending": 400,
+        "password": "oyuxkqxtwafrpjdo",
+        "max_sending": 800,
     },
 ]
 
@@ -73,6 +78,12 @@ email_counter = 0
 counter = 0
 failed_email_counter = 1  # Counter for failed emails
 account_index = 0  # Initialize account_index with 1
+##########
+failed_email_counter_limit = 20
+change_proxy_limit = 30
+take_rest_after_email_counter = 100
+max_workers = 30
+##########
 stop_event = threading.Event()
 
 
@@ -103,7 +114,8 @@ def send_email(email_data, proxy):
         # Create the email message
         msg = MIMEMultipart()
         msg["Subject"] = email_subject
-        msg["From"] = smtp_username
+        # msg["From"] = smtp_username
+        msg["From"] = f"""Best Offers"""
         msg["To"] = email
 
         
@@ -156,13 +168,10 @@ def send_email(email_data, proxy):
                     f.write(line)
                 # Close the file again
         f.close()
-
         print(f"Successfully sent email to {email} using proxy {proxy}")
-
         valid_emails.append(email)
         with open(valid_emails_file, "a") as f:
             f.write(email + "\n")
-
         return email
 
     except Exception as e:
@@ -187,7 +196,7 @@ def should_stop():
     return False
 
 
-with ThreadPoolExecutor(max_workers=10) as executor:
+with ThreadPoolExecutor(max_workers=max_workers) as executor:
     proxy_index = 0
     for email_data in email_list:
         proxy = proxies[proxy_index]
@@ -196,10 +205,10 @@ with ThreadPoolExecutor(max_workers=10) as executor:
         email_counter += 1
         counter += 1
         print(counter)
-        if email_counter % 30 == 0:
+        if email_counter % change_proxy_limit == 0:
             proxy_index = (proxy_index + 1) % len(proxies)
             # print(f"Switching to next proxy: {proxy}")
-        if email_counter % 50 == 0:
+        if email_counter % take_rest_after_email_counter == 0:
             print("waiting")
             time.sleep(random.randint(60, 240))
 
@@ -210,7 +219,7 @@ with ThreadPoolExecutor(max_workers=10) as executor:
             executor.shutdown(wait=False)
             break  # Exit the loop
 
-        if failed_email_counter % 12 == 0 and account_index == len(smtp_accounts) - 1:
+        if failed_email_counter % failed_email_counter_limit == 0 and account_index == len(smtp_accounts) - 1:
             print("Terminating due to too many failed emails...")
             print("Stopping threads...")
             stop_event.set()
@@ -219,7 +228,7 @@ with ThreadPoolExecutor(max_workers=10) as executor:
 
         if (
             smtp_accounts[account_index]["max_sending"] == counter
-            or failed_email_counter % 12 == 0
+            or failed_email_counter % failed_email_counter_limit == 0
         ):
             print(f"---------------count reach limit {counter}-------------- ")
             counter = 0

@@ -56,7 +56,6 @@
 
 ################################### test http proxy 
 
-
 import random
 import time
 import requests
@@ -76,7 +75,7 @@ def test_proxy(proxy):
     try:
         ua = UserAgent()
         headers = {'User-Agent': ua.random}
-        response = requests.get('https://www.google.com', proxies={'http': proxy, 'https': proxy}, headers=headers, timeout=1000)
+        response = requests.get('https://www.google.com', proxies={'http': proxy, 'https': proxy}, headers=headers, timeout=100)
         if response.status_code == 200:
             return True
     except RequestException as e:
@@ -90,9 +89,9 @@ def save_working_proxies(input_file, output_file):
 
     # Remove duplicate proxies
     proxies = list(set(proxies))
-
+    print('here is the count of proxies : '+str(len(proxies)))
     working_proxies = []
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=50) as executor:
         futures = [executor.submit(test_proxy, proxy) for proxy in proxies]
 
         for future, proxy in zip(futures, proxies):

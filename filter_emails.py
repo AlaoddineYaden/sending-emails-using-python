@@ -2,6 +2,9 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
+
+# clean_emails_file = 'clean_emails.txt'
+# valid_emails_file = 'emails.txt'
 root = os.getenv("root")
 clean_emails_file = root + os.getenv("emails_file")
 valid_emails_file = root + os.getenv("valid_emails_file")
