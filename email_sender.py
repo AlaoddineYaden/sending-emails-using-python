@@ -58,18 +58,10 @@ EMAIL_LIMITS = {
     "max_workers": int(os.getenv("MAX_WORKERS", "40")),
 }
 
-testing_mode = None
-
-
-def get_testing_mode():
-    """Check if application is running in testing mode."""
-    return os.getenv('EMAIL_SENDER_TESTING_MODE', 'false').lower() == 'true'
 
 
 class EmailSender:
     def __init__(self):
-        self.testing_mode = testing_mode if testing_mode is not None else get_testing_mode() # type: ignore
-
         self.email_list = self._load_file_lines(EMAIL_FILES["source"])
         self.proxies = self._load_file_lines(PROXY_FILES["working"])
         self.email_template = self._load_file_content(EMAIL_FILES["template"])
@@ -144,12 +136,7 @@ class EmailSender:
             msg = self._create_email_message(email_id, email, smtp_username)
 
             # In testing mode, don't actually send the email
-            if self.testing_mode:
-                print(f"[TESTING MODE] Would send email to {email} using proxy {proxy}")
-                # Simulate successful sending
-                self._handle_successful_email(email_data, email)
-                return email
-
+            
             # Send the email (only in non-testing mode)
             with self.smtp_connection(proxy, smtp_username, smtp_password) as smtp:
                 smtp.send_message(msg)
